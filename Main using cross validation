@@ -1,0 +1,73 @@
+from sklearn.svm import SVC
+from sklearn.model_selection import cross_val_score
+from sklearn.svm import SVC
+from adspy_shared_utilities import plot_class_regions_for_classifier_subplot
+from sklearn.model_selection import train_test_split
+from sklearn.svm import SVC
+from sklearn.datasets import make_classification, make_blobs
+from matplotlib.colors import ListedColormap
+from sklearn.datasets import load_breast_cancer
+import matplotlib
+import matplotlib.pyplot as plt
+from sklearn.model_selection import train_test_split
+import pandas as pd
+import numpy as np
+from sklearn.neighbors import KNeighborsClassifier
+matplotlib.use('TkAgg')
+plt.interactive(False)
+cmap_bold = ListedColormap(['#FFFF00', '#00FF00', '#0000FF','#000000'])
+from adspy_shared_utilities import plot_class_regions_for_classifier_subplot
+from sklearn.model_selection import validation_curve
+from sklearn.model_selection import cross_val_score
+fruits = pd.read_table('fruit_data_with_colors.txt')
+
+feature_names_fruits = ['height', 'width', 'mass', 'color_score']
+X_fruits = fruits[feature_names_fruits]
+y_fruits = fruits['fruit_label']
+target_names_fruits = ['apple', 'mandarin', 'orange', 'lemon']
+
+X_fruits_2d = fruits[['height', 'width']]
+y_fruits_2d = fruits['fruit_label']
+
+clf = KNeighborsClassifier(n_neighbors = 5)
+X = X_fruits_2d.values
+y = y_fruits_2d.values
+cv_scores = cross_val_score(clf, X, y)
+
+print('Cross-validation scores (3-fold):', cv_scores)
+print('Mean cross-validation score (3-fold): {:.3f}'.format(np.mean(cv_scores)))
+
+param_range = np.logspace(-3, 3, 4)
+train_scores, test_scores = validation_curve(SVC(kernel='rbf', gamma=10,C=1), X, y, param_name='gamma',param_range=param_range, cv=5)
+print('train scores=',train_scores)
+print('test scores = ',test_scores)
+
+plt.figure()
+
+train_scores_mean = np.mean(train_scores, axis=1)
+train_scores_std = np.std(train_scores, axis=1)
+test_scores_mean = np.mean(test_scores, axis=1)
+test_scores_std = np.std(test_scores, axis=1)
+
+plt.title('Validation Curve with SVM')
+plt.xlabel('$\gamma$ (gamma)')
+plt.ylabel('Score')
+plt.ylim(0.0, 1.1)
+lw = 2
+
+plt.semilogx(param_range, train_scores_mean, label='Training score',
+            color='darkorange', lw=lw)
+
+plt.fill_between(param_range, train_scores_mean - train_scores_std,
+                train_scores_mean + train_scores_std, alpha=0.2,
+                color='darkorange', lw=lw)
+
+plt.semilogx(param_range, test_scores_mean, label='Cross-validation score',
+            color='navy', lw=lw)
+
+plt.fill_between(param_range, test_scores_mean - test_scores_std,
+                test_scores_mean + test_scores_std, alpha=0.2,
+                color='navy', lw=lw)
+
+plt.legend(loc='best')
+plt.show()
